@@ -1,0 +1,23 @@
+class VacuumCleaner:
+    def __init__(self, environment):
+        self.environment = environment
+        self.position = [0, 0]  # Initial position (0, 0)
+
+    def clean(self):
+        for row in range(2):  # Loop through the rows
+            for col in range(2):  # Loop through the columns
+                self.position = [row, col]
+                if self.environment[row][col] == 'dirty':
+                    print(f"Cleaning position: {self.position}")
+                    self.environment[row][col] = 'clean'
+                else:
+                    print(f"Position {self.position} is already clean.")
+
+        print("Cleaning completed!")
+
+# Define the environment (2x2 grid, either 'clean' or 'dirty')
+environment = [['dirty', 'clean'],
+               ['dirty', 'dirty']]
+
+vacuum = VacuumCleaner(environment)
+vacuum.clean()
