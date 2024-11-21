@@ -1,0 +1,65 @@
+import pandas as pd
+import re
+
+# Specify the path to your CSV file
+file_path = r'C:\\Users\\iamth\\OneDrive\\Documents\\update.csv'
+
+# Load the dataset with specified encoding
+data = pd.read_csv(file_path, encoding='ISO-8859-1')
+
+# Define keyword lists (including hashtags and German keywords)
+physician_keywords = ["physician", "doctor", "MD", "medic", "medical practitioner","Dr"]
+ophthalmologist_keywords = ["ophthalmologist", "eye doctor", "Augenarzt", "augenarzt"]
+germany_keywords = ["Germany", "Berlin", "Munich", "Hamburg", "Frankfurt", "Deutschland", "Erlangen", "Bavaria", "Baden-Württemberg"]
+
+# Define hashtag keywords related to ophthalmology and the German context (removed Long COVID)
+ophthalmology_hashtags = [
+    "#ophthalmology", "#eyecare", "#optician", "#opthalmology", "#AugenklinikErlangen",
+    "#eyehealth", "#eyedoctor", "#visioncare", "#optometry", "#blauesauge",
+    "#Augenheilkunde", "#Sehbehinderung", "#Medizin", "#Gesundheit", "#Augenoperation"
+]
+
+# Function to check for keywords in text
+def contains_keywords(text, keywords):
+    if pd.isna(text):  # Handle missing values
+        return 0
+    for keyword in keywords:
+        if re.search(r'\b' + re.escape(keyword) + r'\b', text, re.IGNORECASE):  # Word boundary added
+            return 1
+    return 0
+
+# Function to check if hashtags are present in tweet text
+def contains_hashtags(text, hashtags):
+    if pd.isna(text):  # Handle missing values
+        return 0
+    for hashtag in hashtags:
+        if re.search(r'#' + re.escape(hashtag[1:]), text, re.IGNORECASE):  # Remove # symbol and search for hashtag
+            return 1
+    return 0
+
+# Create new columns based on the presence of relevant keywords and hashtags
+data['is_physician'] = (
+    data['Tweet Text'].apply(lambda x: contains_keywords(x, physician_keywords)) |
+    data['Author Name'].apply(lambda x: contains_keywords(x, physician_keywords)) |
+    data['Author Username'].apply(lambda x: contains_keywords(x, physician_keywords))
+)
+
+data['is_ophthalmologist'] = (
+    data['Tweet Text'].apply(lambda x: contains_keywords(x, ophthalmologist_keywords)) |
+    data['Author Name'].apply(lambda x: contains_keywords(x, ophthalmologist_keywords)) |
+    data['Author Username'].apply(lambda x: contains_keywords(x, ophthalmologist_keywords))
+)
+
+data['is_from_germany'] = (
+    data['Tweet Text'].apply(lambda x: contains_keywords(x, germany_keywords)) |
+    data['Author Name'].apply(lambda x: contains_keywords(x, germany_keywords)) |
+    data['Author Username'].apply(lambda x: contains_keywords(x, germany_keywords))
+)
+
+# Create a new column for ophthalmology-related hashtags and German-related content
+data['is_opthalmology_related'] = data['Tweet Text'].apply(lambda x: contains_hashtags(x, ophthalmology_hashtags))
+
+# Save the updated dataset to a new CSV file
+output_path = r'C:\Users\iamth\OneDrive\Documents\updated2_twitter_data.csv'
+data.to_csv(output_path, index=False)
+print(f"Updated data saved to '{output_path}'")
